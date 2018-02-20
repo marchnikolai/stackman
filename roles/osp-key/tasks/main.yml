@@ -1,0 +1,46 @@
+---
+# tasks file for roles/osp-key
+
+- name: generate key files
+  user:
+    name: "{{ item.username }}"
+    generate_ssh_key: yes
+    ssh_key_file: "{{ item.file }}"
+  with_items: "{{ osp_key__ssh_keys }}"
+  when: item.username | d('') and item.file | d('')
+  register: osp_key__user_results
+  loop_control:
+    label: "{{ item.username + ' ' + item.file }}"
+
+- name: push public key to Open Stack
+  os_keypair:
+    cloud: "{{ item.cloud }}"
+    state: "{{ item.state }}"
+    name: "{{ item.name | d(item.file | regex_replace('^.+/(\\w+)$', '\\1')) }}"
+    public_key_file: "{{ item.file + '.pub' }}"
+  with_items: "{{ osp_key__ssh_keys }}"
+  when: item.username | d('') and item.file | d('')
+  register: osp_key__os_keypair_results
+  loop_control:
+    label: "{{ item.username + ' ' + item.file }}"
+
+- name: delete private key files
+  file:
+    path: "{{ item.file }}"
+    state: absent
+  with_items: "{{ osp_key__ssh_keys }}"
+  when: item.state | d('') and not (item.state == 'present')
+  register: osp_key__file1_results
+  loop_control:
+    label: "{{ item.username + ' ' + item.file }}"
+
+- name: delete public key files
+  file:
+    path: "{{ item.file + '.pub' }}"
+    state: absent
+  with_items: "{{ osp_key__ssh_keys }}"
+  when: item.state | d('') and not (item.state == 'present')
+  register: osp_key__file2_results
+  loop_control:
+    label: "{{ item.username + ' ' + item.file + '.pub' }}"
+

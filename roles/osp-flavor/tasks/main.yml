@@ -1,0 +1,17 @@
+---
+# tasks file for roles/osp-flavor
+
+- name: create Open Stack nova flavor
+  os_nova_flavor:
+    cloud: "{{ item.cloud }}"
+    state: "{{ item.state }}"
+    name: "{{ item.name }}"
+    ram: "{{ item.ram }}"
+    vcpus: "{{ item.vcpus }}"
+    disk: "{{ item.disk }}"
+  with_items: "{{ osp_flavor__flavors }}"
+  when: item.name | d('') and item.cloud | d('')
+  register: osp_flavor__os_nova_flavor_results
+  loop_control:
+    label: "{{ item.name + ' ' + item.cloud }}"
+

@@ -1,0 +1,44 @@
+---
+# tasks file for roles/osp-net
+
+- name: configure OpenStack network
+  os_network:
+    cloud: "{{ item.ospcloud | d(omit) }}"
+    state: "{{ item.state | d(omit) }}"
+    name: "{{ item.name | mandatory }}"
+    external: "{{ item.external | d(omit) }}"
+  with_items: "{{ osp_net__networks }}"
+  when: item.type | d('') and item.type == 'os_network'
+  register: osp_net__os_network_results
+  loop_control:
+    label: "{{ item.type + '-' + item.name }}"
+
+- name: configure OpenStack subnet
+  os_subnet:
+    cloud: "{{ item.cloud | d(omit) }}"
+    state: "{{ item.state | d(omit) }}"
+    network_name: "{{ item.network_name | d(omit) }}"
+    name: "{{ item.name | mandatory }}"
+    cidr: "{{ item.cidr | d(omit) }}"
+    dns_nameservers: "{{ item.dns_nameservers | d(omit) }}"
+    host_routes: "{{ item.host_routes | d(omit) }}"
+  with_items: "{{ osp_net__networks }}"
+  when: item.type | d('') and item.type == 'os_subnet'
+  register: osp_net__os_subnet_results
+  loop_control:
+    label: "{{ item.type + '-' + item.name }}"
+
+- name: configure OpenStack router
+  os_router:
+    cloud: "{{ item.cloud | d(omit) }}"
+    state: "{{ item.state | d(omit) }}"
+    name: "{{ item.name | d(mandatory) }}"
+    network: "{{ item.network | d(omit) }}"
+    external_fixed_ips: "{{ item.external_fixed_ips | d(omit) }}"
+    interfaces: "{{ item.interfaces | d(omit) }}"
+  with_items: "{{ osp_net__networks }}"
+  when: item.type | d('') and item.type == 'os_router'
+  register: osp_net__os_router_results
+  loop_control:
+    label: "{{ item.type + '-' + item.name }}"
+

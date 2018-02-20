@@ -1,0 +1,14 @@
+---
+# defaults file for roles/osp-key
+
+osp_key__ssh_keys: []
+
+# Example of ssh_keys structure
+# osp_key__ssh_keys:
+#   - name: "{{ ansible_env.USER }}"
+#     file: "{{ ansible_env.HOME + '/.ssh/' + ansible_env.USER }}"
+#     cloud: ospcloud
+#     state: present
+#     # name is not required - it will use key file name by default
+#     name: ospcloud
+

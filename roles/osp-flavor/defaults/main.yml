@@ -1,0 +1,14 @@
+---
+# defaults file for roles/osp-flavor
+
+osp_flavor__flavors: []
+
+# Example of flavors structure:
+# osp_flavor__flavors:
+#   - cloud: ospcloud
+#     state: present
+#     name: m2.small
+#     ram: 2048
+#     vcpus: 1
+#     disk: 10
+
