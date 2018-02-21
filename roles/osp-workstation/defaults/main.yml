@@ -1,7 +1,13 @@
 ---
 # defaults file for roles/osp-workstation
 
-osp_workstation__clouds: ''
+osp_workstation__image_urls: []
+
+# Example of workstation urls
+# osp_workstation__image_urls:
+#  - 'http://www.opentlc.com/download/osp_advanced_networking/rhel-guest-image-7.2-20151102.0.x86_64.qcow2'
+
+osp_workstation__clouds: {}
 
 # Example of workstation clouds
 # osp_workstation__clouds: |2

@@ -15,11 +15,6 @@
   with_subelements:
     - "{{ osp_facter__os_server_facts_results.results }}"
     - ansible_facts.openstack_servers
+  loop_control:
+    label: "{{ item.1.metadata.group + ' ' + item.1.public_v4 }}"
 
-- name: add host to inventory
-  add_host:
-   name: "{{ item.1.public_v4 }}"
-   group: "{{ item.1.metadata.group }}"
-  with_subelements:
-    - "{{ osp_facter__os_server_facts_results.results }}"
-    - ansible_facts.openstack_servers

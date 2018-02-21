@@ -30,3 +30,19 @@
    path: /etc/openstack/clouds.yaml
    block: "{{ osp_workstation__clouds }}"
 
+- name: download RHEL image
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ '/tmp/' + item.url | regex_replace('^(.+/).+', '') }}"
+  with_items: "{{ osp_workstation__image_urls }}"
+
+- name: push RHEL image to Open Stack
+  os_image:
+    cloud: "{{ item.cloud }}"
+    name: "{{ item.name }}"
+    container_format: "{{ item.container_format | d('bare') }}"
+    disk_format: "{{ item.disk_format }}"
+    state: "{{ item.state }}"
+    filename: "{{ '/tmp/' + item.url | regex_replace('^(.+/).+', '') }}"
+  with_items: "{{ osp_workstation__image_urls }}"
+

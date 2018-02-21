@@ -1,0 +1,147 @@
+---
+
+my_cloud: ospcloud
+my_region: RegionOne
+
+osp_workstation__clouds: |2
+  clouds:
+    {{ my_cloud }}:
+      auth:
+        auth_url: http://ctrl-1c43.rhpds.opentlc.com:5000/
+        password: r3dh4t1!
+        project_name: admin
+        username: admin
+      identity_api_version: '3.0'
+      region_name: {{ my_region }}
+osp_workstation__image_urls:
+  - url: 'http://www.opentlc.com/download/osp_advanced_networking/rhel-guest-image-7.2-20151102.0.x86_64.qcow2'
+    cloud: "{{ my_cloud }}"
+    disk_format: qcow2
+    name: rhel-guest
+    state: present
+
+osp_net__networks:
+  - type: os_network
+    cloud: "{{ my_cloud }}"
+    state: present
+    name: ext_network
+    external: true
+  - type: os_subnet
+    cloud: "{{ my_cloud }}"
+    state: present
+    network_name: ext_network
+    name: external_subnet
+    cidr: 10.10.10.0/24
+    dns_nameservers:
+      - 8.8.8.7
+      - 8.8.8.8
+    host_routes:
+      - destination: 0.0.0.0/0
+        nexthop: 10.10.10.0
+      - destination: 192.168.0.0/24
+        nexthop: 192.168.0.0
+  - type: os_network
+    cloud: "{{ my_cloud }}"
+    state: present
+    name: int_network
+    external: false
+  - type: os_subnet
+    cloud: "{{ my_cloud }}"
+    state: present
+    network_name: int_network
+    name: int_subnet
+    cidr: 20.20.20.0/24
+    dns_nameservers:
+      - 8.8.8.7
+      - 8.8.8.8
+    host_routes:
+      - destination: 0.0.0.0/0
+        nexthop: 192.168.0.0
+      - destination: 192.168.0.0/24
+        nexthop: 192.168.0.0
+  - type: os_router
+    cloud: "{{ my_cloud }}"
+    state: present
+    name: router1
+    network: ext_network
+    external_fixed_ips:
+      - subnet: external_subnet
+    interfaces:
+      - int_subnet
+
+osp_key__ssh_keys:
+  - username: "{{ ansible_env.USER }}"
+    file: "{{ ansible_env.HOME + '/.ssh/ansible_ssh' }}"
+    cloud: "{{ my_cloud }}"
+    state: present
+
+osp_flavor__flavors:
+  - cloud: "{{ my_cloud }}"
+    state: present
+    name: m2.small
+    ram: 2048
+    vcpus: 1
+    disk: 10
+
+osp_sg__sgs:
+  - cloud: "{{ my_cloud }}"
+    state: present
+    name: app_servers
+    description: ports_open
+    protocol: tcp
+    rules:
+      - { port: '8080', ip_prefix: '0.0.0.0/0' }
+      - { port: '22', ip_prefix: '0.0.0.0/0' }
+  - cloud: "{{ my_cloud }}"
+    state: present
+    name: frontend_servers
+    description: ports_open
+    protocol: tcp
+    rules:
+      - { port: '80', ip_prefix: '0.0.0.0/0' }
+      - { port: '443', ip_prefix: '0.0.0.0/0' }
+      - { port: '22', ip_prefix: '0.0.0.0/0' }
+  - cloud: "{{ my_cloud }}"
+    state: present
+    name: db_servers
+    description: ports_open
+    protocol: tcp
+    rules:
+      - { port: '5432', ip_prefix: '20.20.20.0/24' }
+      - { port: '22', ip_prefix: '0.0.0.0/0' }
+
+osp_instance__template:
+  cloud: "{{ my_cloud }}"
+  state: present
+  image: rhel-guest
+  deployment: dev
+  flavor: m2.small
+  key_name: ansible_ssh
+  nics:
+    - net-name: int_network
+  userdata: |
+    #!/bin/bash
+    curl -o /tmp/openstack.pub http://www.opentlc.com/download/ansible_bootcamp/openstack_keys/openstack.pub
+    cat /tmp/openstack.pub >> /home/cloud-user/.ssh/authorized_keys
+    curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
+    cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
+  ext_network: ext_network
+  wait: no
+osp_instance__instances:
+  - name: frontend
+    group: frontends
+    security_groups: frontend_servers
+  - name: app1
+    group: apps
+    security_groups: app_servers
+  - name: app2
+    group: apps
+    security_groups: app_servers
+  - name: db
+    group: appdbs
+    security_groups: db_servers
+
+osp_facter__cloud_region:
+  - cloud: "{{ my_cloud }}"
+    region_name: "{{ my_region }}"
+
