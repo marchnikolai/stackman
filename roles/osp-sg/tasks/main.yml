@@ -1,0 +1,32 @@
+---
+# tasks file for roles/osp-sg
+
+- name: create Open Stack security group
+  os_security_group:
+    cloud: "{{ item.cloud }}"
+    state: "{{ item.state }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+  with_items: "{{ osp_sg__sgs }}"
+  when: item.name | d('') and item.cloud | d('')
+  register: osp_sg__os_security_group_results
+  loop_control:
+    label: "{{ item.name + ' ' + item.cloud + ' ' + item.description }}"
+
+- name: create Open Stack security group rule
+  os_security_group_rule:
+    cloud: "{{ item.0.cloud }}"
+    state: "{{ item.0.state }}"
+    security_group: "{{ item.0.name }}"
+    protocol: "{{ item.0.protocol }}"
+    port_range_min: "{{ item.1.port_range_min | d(item.1.port) }}"
+    port_range_max: "{{ item.1.port_range_max | d(item.1.port) }}"
+    remote_ip_prefix: "{{ item.1.ip_prefix }}"
+  with_subelements:
+    - "{{ osp_sg__sgs }}"
+    - rules
+  when: item.0.name | d('') and item.0.cloud | d('')
+  register: osp_sg__os_security_group_rule_results
+  loop_control:
+    label: "{{ item.0.name + ' ' + item.0.cloud + ' ' + item.0.description }}"
+
