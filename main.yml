@@ -58,7 +58,7 @@
     - role: osp-key
       osp_key__ssh_keys:
         - username: "{{ ansible_env.USER }}"
-          file: "{{ ansible_env.HOME + '/.ssh/ospcloud' }}"
+          file: "{{ ansible_env.HOME + '/.ssh/ansible_ssh' }}"
           cloud: ospcloud
           state: present
       tags:
@@ -104,3 +104,38 @@
             - { port: '22', ip_prefix: '0.0.0.0/0' }
       tags:
         - sg
+
+    - role: osp-instance
+      osp_instance__template:
+        cloud: ospcloud
+        state: present
+        image: rhel-guest
+        deployment: dev
+        flavor: m2.small
+        key_name: ansible_ssh
+        nics:
+          - net-name: int_network
+        userdata: |
+          #!/bin/bash
+          curl -o /tmp/openstack.pub http://www.opentlc.com/download/ansible_bootcamp/openstack_keys/openstack.pub
+          cat /tmp/openstack.pub >> /home/cloud-user/.ssh/authorized_keys
+          curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
+          cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
+        ext_network: ext_network
+        wait: no
+      osp_instance__instances:
+        - name: frontend
+          group: frontends
+          security_groups: frontend_servers
+        - name: app1
+          group: apps
+          security_groups: app_servers
+        - name: app2
+          group: apps
+          security_groups: app_servers
+        - name: db
+          group: appdbs
+          security_groups: db_servers
+      tags:
+        - instance
+

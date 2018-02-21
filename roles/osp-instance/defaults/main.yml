@@ -1,0 +1,62 @@
+---
+# defaults file for roles/osp-instance
+
+osp_instance__template: {}
+
+# Example of default instance template
+# osp_instance__template:
+#   - cloud: ospcloud
+#     state: present
+#     image: rhel-guest
+#     flavor: m2.small
+#     key_name: ansible_ssh
+#     nics:
+#       - net-name: int_network
+#     userdata: |
+#       #!/bin/bash
+#       curl -o /tmp/openstack.pub http://www.opentlc.com/download/ansible_bootcamp/openstack_keys/openstack.pub
+#       cat /tmp/openstack.pub >> /home/cloud-user/.ssh/authorized_keys
+#       curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
+#       cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
+#     ext_network: ext_network
+#     wait: no
+
+osp_instance__instances: []
+
+# Example data structure
+# osp_instance__instances:
+#   - cloud: ospcloud
+#     name: app2
+#     state: present
+#     image: rhel-guest
+#     group: apps
+#     deployment: dev
+#     flavor: m2.small
+#     security_groups: app_servers
+#     key_name: ansible_ssh
+#     nics:
+#       - net-name: int_network
+#     userdata: |
+#       #!/bin/bash
+#       curl -o /tmp/openstack.pub http://www.opentlc.com/download/ansible_bootcamp/openstack_keys/openstack.pub
+#       cat /tmp/openstack.pub >> /home/cloud-user/.ssh/authorized_keys
+#       curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
+#       cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
+#     ext_network: ext_network
+#     wait: no
+
+# Or shorter if you use the tmplate, check the documentation about combine filter.
+# osp_instance__instances:
+#   - name: frontend
+#     group: frontends
+#     security_groups: frontend_servers
+#   - name: app1
+#     group: apps
+#     security_groups: app_servers
+#   - name: app2
+#     group: apps
+#     security_groups: app_servers
+#   - name: db
+#     group: appdbs
+#     security_groups: db_servers
+

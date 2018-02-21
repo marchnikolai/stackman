@@ -1,0 +1,50 @@
+---
+# tasks file for roles/osp-instance
+
+- name: create a server instance
+  os_server:
+    cloud: "{{ (osp_instance__template | combine(item)).cloud }}"
+    name: "{{ (osp_instance__template | combine(item)).name }}"
+    state: "{{ (osp_instance__template | combine(item)).state }}"
+    image: "{{ (osp_instance__template | combine(item)).image }}"
+    meta: "{{ (osp_instance__template | combine(item)).meta | d('group=' + (osp_instance__template | combine(item)).group + ',deployment_name=' + (osp_instance__template | combine(item)).deployment) }}"
+    flavor: "{{ (osp_instance__template | combine(item)).flavor }}"
+    security_groups: "{{ (osp_instance__template | combine(item)).security_groups }}"
+    key_name: "{{ (osp_instance__template | combine(item)).key_name }}"
+    wait: "{{ (osp_instance__template | combine(item)).wait | d('yes') }}"
+    nics: "{{ (osp_instance__template | combine(item)).nics }}"
+    userdata: "{{ (osp_instance__template | combine(item)).userdata }}"
+  with_items: "{{ osp_instance__instances }}"
+  when: (osp_instance__template | combine(item)).name | d('') and (osp_instance__template | combine(item)).cloud | d('')
+  register: osp_instance__os_server_results
+  loop_control:
+    label: "{{ (osp_instance__template | combine(item)).name + ' ' + (osp_instance__template | combine(item)).cloud + ' ' + (osp_instance__template | combine(item)).flavor }}"
+
+- name: assign floating IP to instance
+  os_floating_ip:
+    cloud: "{{ (osp_instance__template | combine(item)).cloud }}"
+    state: "{{ (osp_instance__template | combine(item)).state }}"
+    reuse: "{{ (osp_instance__template | combine(item)).reuse | d('yes') }}"
+    server: "{{ (osp_instance__template | combine(item)).instance | d((osp_instance__template | combine(item)).name) }}"
+    network: "{{ (osp_instance__template | combine(item)).ext_network }}"
+    wait: "{{ (osp_instance__template | combine(item)).wait | d('yes') }}"
+    timeout: "{{ (osp_instance__template | combine(item)).timeout | d('180') }}"
+  with_items: "{{ osp_instance__instances }}"
+  when: (osp_instance__template | combine(item)).name | d('') and (osp_instance__template | combine(item)).cloud | d('')
+  register: osp_instance__os_floating_ip_results
+  loop_control:
+    label: "{{ (osp_instance__template | combine(item)).name + ' ' + (osp_instance__template | combine(item)).cloud + ' ' + (osp_instance__template | combine(item)).ext_network }}"
+
+- name: wait for instance to be up
+  wait_for:
+    host: "{{ item.floating_ip.floating_ip_address }}"
+    port: 22
+    search_regex: OpenSSH
+    timeout: 600
+  async: 666
+  poll: 0
+  delegate_to: "{{ inventory_hostname }}"
+  with_items: "{{ osp_instance__os_floating_ip_results.results }}"
+  loop_control:
+    label: "{{ (osp_instance__template | combine( item.item )).name + ' ' + (osp_instance__template | combine( item.item | d({})) ).group + ' ' + (osp_instance__template | combine( item.item | d({}) )).flavor }}"
+
