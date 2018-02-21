@@ -1,0 +1,32 @@
+---
+# tasks file for roles/osp-workstation
+
+- name: install epel rpm from remote repo
+  yum:
+   name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+   state: present
+
+- name: install python ansible python dependencies
+  yum:
+   name: "{{ item }}"
+   state: latest
+  with_items:
+   - python
+   - python-devel
+   - python-pip
+   - gcc
+   - ansible
+
+- name: install shade library for intercating with Openstack clouds
+  pip:
+   name: shade
+
+- name: create openstack directory
+  file: name=/etc/openstack state=directory
+
+- name: create clouds.yaml file
+  blockinfile:
+   create: yes
+   path: /etc/openstack/clouds.yaml
+   block: "{{ osp_workstation__clouds }}"
+

@@ -1,17 +1,35 @@
 - name: provision OpenStack networks, ssh keys, flavors, security groups
   hosts: jumpbox
-  become: no
+  become: yes
+
+  vars:
+    my_cloud: ospcloud
+    my_region: RegionOne
 
   roles:
+    - role: osp-workstation
+      osp_workstation__clouds: |2
+        clouds:
+          {{ my_cloud }}:
+            auth:
+              auth_url: http://ctrl-1c43.rhpds.opentlc.com:5000/
+              password: r3dh4t1!
+              project_name: admin
+              username: admin
+            identity_api_version: '3.0'
+            region_name: {{ my_region }}
+      tags:
+        - workstation
+
     - role: osp-net
       osp_net__networks:
         - type: os_network
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
           name: ext_network
           external: true
         - type: os_subnet
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
           network_name: ext_network
           name: external_subnet
@@ -25,12 +43,12 @@
             - destination: 192.168.0.0/24
               nexthop: 192.168.0.0
         - type: os_network
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
           name: int_network
           external: false
         - type: os_subnet
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
           network_name: int_network
           name: int_subnet
@@ -44,7 +62,7 @@
             - destination: 192.168.0.0/24
               nexthop: 192.168.0.0
         - type: os_router
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
           name: router1
           network: ext_network
@@ -59,14 +77,14 @@
       osp_key__ssh_keys:
         - username: "{{ ansible_env.USER }}"
           file: "{{ ansible_env.HOME + '/.ssh/ansible_ssh' }}"
-          cloud: ospcloud
+          cloud: "{{ my_cloud }}"
           state: present
       tags:
         - key
 
     - role: osp-flavor
       osp_flavor__flavors:
-        - cloud: ospcloud
+        - cloud: "{{ my_cloud }}"
           state: present
           name: m2.small
           ram: 2048
@@ -77,7 +95,7 @@
 
     - role: osp-sg
       osp_sg__sgs:
-        - cloud: ospcloud
+        - cloud: "{{ my_cloud }}"
           state: present
           name: app_servers
           description: ports_open
@@ -85,7 +103,7 @@
           rules:
             - { port: '8080', ip_prefix: '0.0.0.0/0' }
             - { port: '22', ip_prefix: '0.0.0.0/0' }
-        - cloud: ospcloud
+        - cloud: "{{ my_cloud }}"
           state: present
           name: frontend_servers
           description: ports_open
@@ -94,7 +112,7 @@
             - { port: '80', ip_prefix: '0.0.0.0/0' }
             - { port: '443', ip_prefix: '0.0.0.0/0' }
             - { port: '22', ip_prefix: '0.0.0.0/0' }
-        - cloud: ospcloud
+        - cloud: "{{ my_cloud }}"
           state: present
           name: db_servers
           description: ports_open
@@ -107,7 +125,7 @@
 
     - role: osp-instance
       osp_instance__template:
-        cloud: ospcloud
+        cloud: "{{ my_cloud }}"
         state: present
         image: rhel-guest
         deployment: dev
@@ -138,4 +156,11 @@
           security_groups: db_servers
       tags:
         - instance
+
+    - role: osp-facter
+      osp_facter__cloud_region:
+        - cloud: "{{ my_cloud }}"
+          region_name: "{{ my_region }}"
+      tags:
+        - inventory
 

@@ -1,0 +1,17 @@
+---
+# defaults file for roles/osp-workstation
+
+osp_workstation__clouds: ''
+
+# Example of workstation clouds
+# osp_workstation__clouds: |2
+#   clouds:
+#     "{{ my_cloud }}":
+#       auth:
+#         auth_url: http://ctrl-1c43.rhpds.opentlc.com:5000/
+#         password: r3dh4t1!
+#         project_name: admin
+#         username: admin
+#       identity_api_version: '3.0'
+#       region_name: "{{ my_region }}"
+
