@@ -42,7 +42,7 @@
     search_regex: OpenSSH
     timeout: 600
   async: 666
-  poll: 0
+  poll: 5
   delegate_to: "{{ inventory_hostname }}"
   with_items: "{{ osp_instance__os_floating_ip_results.results }}"
   loop_control:
