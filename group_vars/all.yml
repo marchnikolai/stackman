@@ -126,7 +126,7 @@ osp_instance__template:
     curl -o /tmp/internal.repo http://www.opentlc.com/download/ansible_bootcamp/repo/internal.repo
     cp /tmp/internal.repo /etc/yum.repos.d/internal.repo
   ext_network: ext_network
-  wait: no
+  wait: yes
 osp_instance__instances:
   - name: frontend
     group: frontends
