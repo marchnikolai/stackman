@@ -35,6 +35,17 @@
   loop_control:
     label: "{{ (osp_instance__template | combine(item)).name + ' ' + (osp_instance__template | combine(item)).cloud + ' ' + (osp_instance__template | combine(item)).ext_network }}"
 
+- name: ensure that instance is up
+  os_server_action:
+    action: start
+    server: "{{ (osp_instance__template | combine(item)).name }}"
+    timeout: 300
+  with_items: "{{ osp_instance__instances }}"
+  when: (osp_instance__template | combine(item)).name | d('') and (osp_instance__template | combine(item)).state | d('') and (osp_instance__template | combine(item)).state == 'present'
+  register: osp_instance__os_server_action_results
+  loop_control:
+    label: "{{ (osp_instance__template | combine(item)).name + ' ' + (osp_instance__template | combine(item)).cloud + ' ' + (osp_instance__template | combine(item)).flavor + ' ' + (osp_instance__template | combine(item)).state }}"
+
 - name: wait for instance to be up
   wait_for:
     host: "{{ item.floating_ip.floating_ip_address }}"
