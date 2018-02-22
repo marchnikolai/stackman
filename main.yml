@@ -21,6 +21,3 @@
     - role: osp-instance
       tags: [ instance ]
 
-    - role: osp-facter
-      tags: [ inventory ]
-
