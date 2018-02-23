@@ -6,11 +6,6 @@
    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
    state: present
 
-- name: sleep for 15 seconds and continue with play
-  wait_for: timeout=15
-  become: false
-  delegate_to: localhost
-
 - name: install python ansible python dependencies
   yum:
    name: "{{ item }}"
@@ -22,9 +17,9 @@
    - gcc
    - ansible
 
-   #- name: install shade library for intercating with Openstack clouds
-   #pip:
-   #name: shade
+- name: install shade library for intercating with Openstack clouds
+  pip:
+    name: shade
 
 - name: create openstack directory
   file: name=/etc/openstack state=directory
