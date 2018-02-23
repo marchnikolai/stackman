@@ -22,9 +22,9 @@
    - gcc
    - ansible
 
-- name: install shade library for intercating with Openstack clouds
-  pip:
-   name: shade
+   #- name: install shade library for intercating with Openstack clouds
+   #pip:
+   #name: shade
 
 - name: create openstack directory
   file: name=/etc/openstack state=directory
