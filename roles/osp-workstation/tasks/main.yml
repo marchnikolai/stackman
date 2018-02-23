@@ -1,10 +1,6 @@
 ---
 # tasks file for roles/osp-workstation
 
-- name: install shade library for intercating with Openstack clouds
-  pip:
-    name: shade
-
 - name: install epel rpm from remote repo
   yum:
    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
