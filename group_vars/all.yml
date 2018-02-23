@@ -2,6 +2,11 @@
 
 my_cloud: ospcloud
 my_region: RegionOne
+osp_net_state: present
+osp_key_state: present
+osp_flavor_state: present
+osp_sg_state: present
+osp_instance_state: present
 
 osp_workstation__clouds: |2
   clouds:
@@ -23,12 +28,12 @@ osp_workstation__image_urls:
 osp_net__networks:
   - type: os_network
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_net_state }}"
     name: ext_network
     external: true
   - type: os_subnet
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_net_state }}"
     network_name: ext_network
     name: external_subnet
     cidr: 10.10.10.0/24
@@ -42,12 +47,12 @@ osp_net__networks:
         nexthop: 192.168.0.0
   - type: os_network
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_net_state }}"
     name: int_network
     external: false
   - type: os_subnet
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_net_state }}"
     network_name: int_network
     name: int_subnet
     cidr: 20.20.20.0/24
@@ -61,7 +66,7 @@ osp_net__networks:
         nexthop: 192.168.0.0
   - type: os_router
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_net_state }}"
     name: router1
     network: ext_network
     external_fixed_ips:
@@ -73,11 +78,11 @@ osp_key__ssh_keys:
   - username: "{{ ansible_env.USER }}"
     file: "{{ ansible_env.HOME + '/.ssh/ansible_ssh' }}"
     cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_key_state }}"
 
 osp_flavor__flavors:
   - cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_flavor_state }}"
     name: m2.small
     ram: 2048
     vcpus: 1
@@ -85,7 +90,7 @@ osp_flavor__flavors:
 
 osp_sg__sgs:
   - cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_sg_state }}"
     name: app_servers
     description: ports_open
     protocol: tcp
@@ -93,7 +98,7 @@ osp_sg__sgs:
       - { port: '8080', ip_prefix: '0.0.0.0/0' }
       - { port: '22', ip_prefix: '0.0.0.0/0' }
   - cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_sg_state }}"
     name: frontend_servers
     description: ports_open
     protocol: tcp
@@ -102,7 +107,7 @@ osp_sg__sgs:
       - { port: '443', ip_prefix: '0.0.0.0/0' }
       - { port: '22', ip_prefix: '0.0.0.0/0' }
   - cloud: "{{ my_cloud }}"
-    state: present
+    state: "{{ osp_sg_state }}"
     name: db_servers
     description: ports_open
     protocol: tcp
@@ -112,7 +117,7 @@ osp_sg__sgs:
 
 osp_instance__template:
   cloud: "{{ my_cloud }}"
-  state: present
+  state: "{{ osp_instance_state }}"
   image: rhel-guest
   deployment: dev
   flavor: m2.small

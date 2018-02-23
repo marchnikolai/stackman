@@ -30,7 +30,7 @@
     wait: "{{ (osp_instance__template | combine(item)).wait | d('yes') }}"
     timeout: "{{ (osp_instance__template | combine(item)).timeout | d('180') }}"
   with_items: "{{ osp_instance__instances }}"
-  when: (osp_instance__template | combine(item)).name | d('') and (osp_instance__template | combine(item)).cloud | d('')
+  when: (osp_instance__template | combine(item)).name | d('') and (osp_instance__template | combine(item)).cloud | d('') and (osp_instance__template | combine(item)).state == 'present'
   register: osp_instance__os_floating_ip_results
   loop_control:
     label: "{{ (osp_instance__template | combine(item)).name + ' ' + (osp_instance__template | combine(item)).cloud + ' ' + (osp_instance__template | combine(item)).ext_network }}"
@@ -56,6 +56,7 @@
   poll: 5
   delegate_to: "{{ inventory_hostname }}"
   with_items: "{{ osp_instance__os_floating_ip_results.results }}"
+  when: item.floating_ip is defined
   loop_control:
     label: "{{ (osp_instance__template | combine( item.item )).name + ' ' + (osp_instance__template | combine( item.item | d({})) ).group + ' ' + (osp_instance__template | combine( item.item | d({}) )).flavor }}"
 

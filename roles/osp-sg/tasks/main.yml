@@ -28,5 +28,5 @@
   when: item.0.name | d('') and item.0.cloud | d('')
   register: osp_sg__os_security_group_rule_results
   loop_control:
-    label: "{{ item.0.name + ' ' + item.0.cloud + ' ' + item.0.description }}"
+    label: "{{ item.0.name + ' ' + item.0.cloud + ' ' + item.1.port }}"
 
